@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenBCB
 
-## Getting Started
+Open-source Solana wallet anomaly scoring API. Brings graph-based AML signal detection to small fintechs, CDFIs, and indie developers priced out of Chainalysis.
 
-First, run the development server:
+## What it does
 
+Takes any Solana wallet address and returns a structured risk score based on four on-chain behavioral signals:
+
+- **Wash trading** — detects round-trip transactions between wallets
+- **Fan-out burst** — flags sudden sends to many new wallets in a short window
+- **Counterparty clustering** — measures how isolated a wallet's transaction network is
+- **Velocity anomaly** — identifies bot-like transaction frequency
+
+## Stack
+
+- **Backend** — FastAPI, NetworkX, Redis, Solana RPC
+- **Frontend** — Next.js, Tailwind CSS
+- **Infra** — Docker, Digital Ocean
+
+## Quickstart
+
+**Backend**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Frontend**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Redis**
+```bash
+brew services start redis
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API
+```bash
+curl -X POST "http://localhost:8000/analyze" \
+-H "Content-Type: application/json" \
+-d '{"wallet": "YOUR_WALLET_ADDRESS", "limit": 50}'
+```
 
-## Learn More
+**Response**
+```json
+{
+  "wallet": "...",
+  "transactions_analyzed": 50,
+  "overall_score": 24.9,
+  "risk_level": "low",
+  "signals": {
+    "wash_trading": 0.0,
+    "fan_out": 0.0,
+    "clustering": 0.998,
+    "velocity": 0.0
+  },
+  "cached": false
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Risk levels
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Score | Level |
+|-------|-------|
+| 0–39 | Low |
+| 40–69 | Medium |
+| 70–100 | High |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Why this exists
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Chainalysis costs $50k+/year. Small CDFIs, crypto-native startups, and indie fintech developers have no affordable alternative for on-chain AML signal detection. OpenBCB is free, open source, and deployable in one command.
