@@ -2,7 +2,7 @@ import httpx
 import asyncio
 from typing import Optional
 
-SOLANA_RPC_URL = "https://api.devnet.solana.com"
+SOLANA_RPC_URL = "https://api.mainnet-beta.solana.com"
 SEMAPHORE = asyncio.Semaphore(10)
 
 async def get_signatures(wallet: str, limit: int = 100) -> list[dict]:
