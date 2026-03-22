@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.rpc import get_transactions
 from app.graph import build_graph
@@ -6,6 +7,14 @@ from app.scorer import score_wallet
 from app.cache import get_cached, set_cached
 
 app = FastAPI(title="OpenBCB", description="Solana wallet anomaly detection")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class AnalyzeRequest(BaseModel):
     wallet: str
