@@ -2,19 +2,22 @@ from fastapi import FastAPI
 from app.rpc import get_signatures
 from app.rpc import get_transactions
 from app.graph import build_graph
+from app.signals import wash_trading_signal, fan_out_signal, clustering_signal, velocity_signal
 
 
 app = FastAPI(title="Flare", description="Solana wallet anomaly detection")
 
-@app.get("/test-graph")
-async def test_graph():
+
+@app.get("/test-signals")
+async def test_signals():
     wallet = "vines1vzrYbzLMRdu58ou5XTby4qAqVRLmqo36NKPTg"
-    txns = await get_transactions(wallet, limit=5)
+    txns = await get_transactions(wallet, limit=20)
     G = build_graph(txns, wallet)
     return {
-        "nodes": G.number_of_nodes(),
-        "edges": G.number_of_edges(),
-        "sample_nodes": list(G.nodes)[:5]
+        "wash_trading": wash_trading_signal(G, wallet),
+        "fan_out": fan_out_signal(G, wallet),
+        "clustering": clustering_signal(G, wallet),
+        "velocity": velocity_signal(G, wallet)
     }
 
 @app.get("/test-rpc")
